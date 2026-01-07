@@ -1,0 +1,11 @@
+site/aronnax/dao/UtilityCardDAO.class
+site/aronnax/CRUDTest.class
+site/aronnax/entity/Fee.class
+site/aronnax/entity/Property.class
+site/aronnax/dao/UserDAO.class
+site/aronnax/dao/PropertyDAO.class
+site/aronnax/dao/FeeDAO.class
+site/aronnax/util/DBUtil.class
+site/aronnax/CLITest.class
+site/aronnax/entity/User.class
+site/aronnax/entity/UtilityCard.class
