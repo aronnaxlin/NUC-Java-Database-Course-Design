@@ -47,8 +47,12 @@ out/
 
 # Project specific: Generated CSV files
 *.csv
+
+# Project specific: Generated SQL files
+!*.sql
+
+# Project specific: README.md
 !README.md
-!data.sql
 
 # Java crash logs
 hs_err_pid*
