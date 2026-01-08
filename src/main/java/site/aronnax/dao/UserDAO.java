@@ -203,6 +203,38 @@ public class UserDAO {
     }
 
     /**
+     * Multi-dimensional search by keyword (name or phone)
+     *
+     * @param keyword Search keyword
+     * @return List of matching users
+     */
+    public List<User> searchByKeyword(String keyword) {
+        String sql = "SELECT * FROM users WHERE name LIKE ? OR phone LIKE ?";
+        List<User> users = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            String searchPattern = "%" + keyword + "%";
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("搜索用户失败: " + e.getMessage());
+        } finally {
+            closeResources(conn, pstmt, rs);
+        }
+        return users;
+    }
+
+    /**
      * 将ResultSet映射为User对象
      */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {

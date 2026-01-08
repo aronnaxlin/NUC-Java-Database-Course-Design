@@ -214,6 +214,64 @@ public class FeeDAO {
     }
 
     /**
+     * Find all unpaid fees
+     *
+     * @return List of unpaid fees
+     */
+    public List<Fee> findUnpaidFees() {
+        String sql = "SELECT * FROM fees WHERE is_paid = 0";
+        List<Fee> fees = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                fees.add(mapResultSetToFee(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("查询未缴费用失败: " + e.getMessage());
+        } finally {
+            closeResources(conn, pstmt, rs);
+        }
+        return fees;
+    }
+
+    /**
+     * Find unpaid fees for a specific property
+     *
+     * @param propertyId Property ID
+     * @return List of unpaid fees
+     */
+    public List<Fee> findUnpaidByPropertyId(Long propertyId) {
+        String sql = "SELECT * FROM fees WHERE p_id = ? AND is_paid = 0";
+        List<Fee> fees = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, propertyId);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                fees.add(mapResultSetToFee(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("查询房产未缴费用失败: " + e.getMessage());
+        } finally {
+            closeResources(conn, pstmt, rs);
+        }
+        return fees;
+    }
+
+    /**
      * 将ResultSet映射为Fee对象
      */
     private Fee mapResultSetToFee(ResultSet rs) throws SQLException {

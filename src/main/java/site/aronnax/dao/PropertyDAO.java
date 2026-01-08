@@ -215,6 +215,39 @@ public class PropertyDAO {
     }
 
     /**
+     * Find property by room number
+     *
+     * @param buildingNo Building number
+     * @param unitNo     Unit number
+     * @param roomNo     Room number
+     * @return Property object or null if not found
+     */
+    public Property findByRoomNo(String buildingNo, String unitNo, String roomNo) {
+        String sql = "SELECT * FROM properties WHERE building_no = ? AND unit_no = ? AND room_no = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, buildingNo);
+            pstmt.setString(2, unitNo);
+            pstmt.setString(3, roomNo);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToProperty(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("查询房产失败: " + e.getMessage());
+        } finally {
+            closeResources(conn, pstmt, rs);
+        }
+        return null;
+    }
+
+    /**
      * 将ResultSet映射为Property对象
      */
     private Property mapResultSetToProperty(ResultSet rs) throws SQLException {
