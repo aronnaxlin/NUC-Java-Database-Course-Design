@@ -1,0 +1,40 @@
+<div class="row">
+    <div class="col-4">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>当前余额</h3>
+            </div>
+            <div style="font-size: 2.5rem; color: var(--accent-orange); font-family: var(--font-mono); font-weight: bold;">
+                ¥ <span id="walletBalance">--</span>
+            </div>
+            <div style="margin-top: 20px;">
+                <input type="number" id="walletRechargeAmount" class="sci-input" placeholder="充值金额..." style="margin-bottom: 10px;">
+                <button class="sci-btn" onclick="rechargeWallet()">充值</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-8">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>交易记录</h3>
+            </div>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                 <table class="sci-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>类型</th>
+                            <th>金额</th>
+                            <th>描述</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="walletTransBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-6">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>水电卡充值</h3>
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label>卡号:</label>
+                <input type="number" id="ucCardId" class="sci-input" placeholder="输入卡号...">
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label>充值金额:</label>
+                <input type="number" id="ucAmount" class="sci-input" placeholder="0.00">
+            </div>
+            <button class="sci-btn" onclick="topUpCard()">立即充值</button>
+            <div id="ucResult" style="margin-top:15px; min-height:20px;"></div>
+        </div>
+    </div>
+
+    <div class="col-6">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>卡片查询</h3>
+            </div>
+             <div class="form-group" style="margin-bottom:15px">
+                <input type="number" id="ucSearchId" class="sci-input" placeholder="输入卡号查询...">
+            </div>
+            <button class="sci-btn" onclick="checkCardBalance()">查询</button>
+            <div id="ucBalanceResult" style="margin-top:20px; font-size: 1.2rem; color: var(--primary-cyan);"></div>
+        </div>
+    </div>
+</div>
+
+<div class="alert-box alert-error" id="ucArrearsAlert">
+    <strong>⚠️ 拦截警告:</strong> <span id="ucArrearsMsg"></span>
+</div>

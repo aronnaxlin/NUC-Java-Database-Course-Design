@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import site.aronnax.dao.PropertyDAO;
 import site.aronnax.dao.UserDAO;
 import site.aronnax.entity.Property;
@@ -16,17 +19,13 @@ import site.aronnax.service.OwnerService;
  * Implements owner management business logic
  *
  * @author Aronnax (Li Linhan)
- * @version 1.0
  */
+@Service
+@RequiredArgsConstructor
 public class OwnerServiceImpl implements OwnerService {
 
     private final UserDAO userDAO;
     private final PropertyDAO propertyDAO;
-
-    public OwnerServiceImpl() {
-        this.userDAO = new UserDAO();
-        this.propertyDAO = new PropertyDAO();
-    }
 
     @Override
     public List<Map<String, Object>> searchOwners(String keyword) {
@@ -38,6 +37,18 @@ public class OwnerServiceImpl implements OwnerService {
         for (User user : users) {
             // Get properties owned by this user
             List<Property> properties = propertyDAO.findByUserId(user.getUserId());
+            if (properties.isEmpty()) {
+                // Should we list owners without properties? Requirements said "Owner Management
+                // of residents".
+                // Let's assume yes, or we can just list empty properties.
+                // But the loop below depends on properties.
+                // Let's add user info even if no property found?
+                // The map keys suggest property info is expected.
+                // If the user has no property, they might not be an "owner" strictly speaking
+                // in some contexts, but they are in User table.
+                // Let's just follow existing logic: loop properties. If no properties, no
+                // result added.
+            }
 
             for (Property property : properties) {
                 Map<String, Object> ownerInfo = new HashMap<>();
@@ -55,12 +66,6 @@ public class OwnerServiceImpl implements OwnerService {
                 results.add(ownerInfo);
             }
         }
-
-        // Also search by property room number
-        // Note: This requires parsing the keyword into building, unit, room
-        // For simplicity, we'll keep it as is for now
-        // You can enhance this later to support "A1-1-101" format searches
-
         return results;
     }
 

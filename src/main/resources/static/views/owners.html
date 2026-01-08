@@ -1,0 +1,43 @@
+<!-- Search Bar -->
+<div class="sci-card">
+    <div class="row" style="align-items: center;">
+        <div class="col-8" style="flex:1;">
+            <input type="text" id="ownerSearchInput" class="sci-input" placeholder="输入姓名或手机号搜索业主...">
+        </div>
+        <div>
+            <button class="sci-btn" onclick="searchOwners()">搜索</button>
+        </div>
+    </div>
+</div>
+
+<!-- Owners Table -->
+<div class="sci-card">
+    <div class="card-header">
+        <h3>业主列表</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="sci-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                    <th>手机号</th>
+                    <th>性别</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="ownersTableBody">
+                <!-- Rows will be injected -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Detail Modal (Hidden by default, simple implementation inline for now) -->
+<div id="ownerDetailModal" class="sci-card" style="display:none; position: fixed; top: 20%; left: 30%; width: 40%; z-index: 100; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+    <div class="card-header">
+        <h3>业主详情</h3>
+        <button class="sci-btn danger" onclick="closeOwnerModal()">关闭</button>
+    </div>
+    <div id="ownerDetailContent"></div>
+</div>

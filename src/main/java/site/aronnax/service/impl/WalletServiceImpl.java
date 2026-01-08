@@ -3,6 +3,9 @@ package site.aronnax.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import site.aronnax.dao.FeeDAO;
 import site.aronnax.dao.PropertyDAO;
 import site.aronnax.dao.UserWalletDAO;
@@ -20,8 +23,9 @@ import site.aronnax.service.WalletService;
  * Implements wallet management business logic with critical arrears checking
  *
  * @author Aronnax (Li Linhan)
- * @version 1.0
  */
+@Service
+@RequiredArgsConstructor
 public class WalletServiceImpl implements WalletService {
 
     private final UserWalletDAO walletDAO;
@@ -30,28 +34,16 @@ public class WalletServiceImpl implements WalletService {
     private final UtilityCardDAO cardDAO;
     private final PropertyDAO propertyDAO;
 
-    public WalletServiceImpl() {
-        this.walletDAO = new UserWalletDAO();
-        this.transactionDAO = new WalletTransactionDAO();
-        this.feeDAO = new FeeDAO();
-        this.cardDAO = new UtilityCardDAO();
-        this.propertyDAO = new PropertyDAO();
-    }
-
     @Override
     public boolean rechargeWallet(Long userId, Double amount) {
-        if (amount <= 0) {
-            System.err.println("❌ 充值金额必须大于0");
+        if (amount <= 0)
             return false;
-        }
 
         // Get or create wallet
         UserWallet wallet = walletDAO.findByUserId(userId);
         if (wallet == null) {
-            // Create wallet if not exists
-            if (!createWallet(userId)) {
+            if (!createWallet(userId))
                 return false;
-            }
             wallet = walletDAO.findByUserId(userId);
         }
 
@@ -67,10 +59,7 @@ public class WalletServiceImpl implements WalletService {
         boolean success = walletDAO.update(wallet);
 
         if (success) {
-            // Record transaction
-            recordTransaction(wallet.getWalletId(), "RECHARGE", amount, newBalance, null,
-                    "钱包充值: +" + amount + "元");
-            System.out.println("✅ 钱包充值成功: 用户ID " + userId + ", 充值金额 " + amount + "元, 当前余额 " + newBalance + "元");
+            recordTransaction(wallet.getWalletId(), "RECHARGE", amount, newBalance, null, "钱包充值: +" + amount + "元");
         }
 
         return success;
@@ -78,65 +67,39 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public boolean payFeeFromWallet(Long feeId) {
-        // Get fee information
         Fee fee = feeDAO.findById(feeId);
-        if (fee == null) {
-            System.err.println("❌ 账单不存在: " + feeId);
+        if (fee == null || fee.getIsPaid() == 1 || !"WALLET".equals(fee.getPaymentMethod())) {
             return false;
         }
 
-        if (fee.getIsPaid() == 1) {
-            System.err.println("❌ 账单已缴费");
-            return false;
-        }
-
-        // Verify this fee should be paid by wallet
-        if (!"WALLET".equals(fee.getPaymentMethod())) {
-            System.err.println("❌ 此账单不使用钱包支付，支付方式: " + fee.getPaymentMethod());
-            return false;
-        }
-
-        // Get property and user ID
         Property property = propertyDAO.findById(fee.getpId());
         if (property == null || property.getUserId() == null) {
-            System.err.println("❌ 房产信息无效");
             return false;
         }
 
         Long userId = property.getUserId();
         UserWallet wallet = walletDAO.findByUserId(userId);
-
-        if (wallet == null) {
-            System.err.println("❌ 用户钱包不存在");
+        if (wallet == null)
             return false;
-        }
 
-        // Check balance
         Double currentBalance = wallet.getBalance() != null ? wallet.getBalance() : 0.0;
-        if (currentBalance < fee.getAmount()) {
-            System.err.println("❌ 钱包余额不足: 需要 " + fee.getAmount() + "元, 当前 " + currentBalance + "元");
+        if (currentBalance < fee.getAmount())
             return false;
-        }
 
-        // Deduct from wallet
         Double newBalance = currentBalance - fee.getAmount();
         wallet.setBalance(newBalance);
 
         boolean walletUpdated = walletDAO.update(wallet);
-        if (!walletUpdated) {
+        if (!walletUpdated)
             return false;
-        }
 
-        // Mark fee as paid
         fee.setIsPaid(1);
         fee.setPayDate(LocalDateTime.now());
         boolean feeUpdated = feeDAO.update(fee);
 
         if (feeUpdated) {
-            // Record transaction
             recordTransaction(wallet.getWalletId(), "PAY_FEE", -fee.getAmount(), newBalance, feeId,
                     "缴费: " + fee.getFeeType() + " -" + fee.getAmount() + "元");
-            System.out.println("✅ 缴费成功: 账单ID " + feeId + ", 金额 " + fee.getAmount() + "元");
         }
 
         return feeUpdated;
@@ -144,66 +107,42 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public boolean topUpCardFromWallet(Long userId, Long cardId, Double amount) {
-        if (amount <= 0) {
-            System.err.println("❌ 充值金额必须大于0");
+        if (amount <= 0)
             return false;
+
+        if (checkWalletArrears(userId)) {
+            throw new IllegalStateException("您有未缴的物业费/取暖费，请先缴清欠款后再充值");
         }
 
-        // CRITICAL: Check wallet arrears before allowing top-up
-        boolean hasArrears = checkWalletArrears(userId);
-        if (hasArrears) {
-            System.err.println("❌ 欠费拦截: 用户ID " + userId + " 存在未缴的钱包支付费用，无法充值水电卡！");
-            throw new IllegalStateException("您有未缴的物业费/取暖费，请先缴清欠款后再充值水电卡");
-        }
-
-        // Get wallet
         UserWallet wallet = walletDAO.findByUserId(userId);
-        if (wallet == null) {
-            System.err.println("❌ 用户钱包不存在");
+        if (wallet == null)
             return false;
-        }
 
-        // Check wallet balance
         Double currentWalletBalance = wallet.getBalance() != null ? wallet.getBalance() : 0.0;
-        if (currentWalletBalance < amount) {
-            System.err.println("❌ 钱包余额不足: 需要 " + amount + "元, 当前 " + currentWalletBalance + "元");
+        if (currentWalletBalance < amount)
             return false;
-        }
 
-        // Get card
         UtilityCard card = cardDAO.findById(cardId);
-        if (card == null) {
-            System.err.println("❌ 水电卡不存在: " + cardId);
+        if (card == null)
             return false;
-        }
 
-        // Verify card belongs to user's property
         Property property = propertyDAO.findById(card.getpId());
-        if (property == null || !property.getUserId().equals(userId)) {
-            System.err.println("❌ 此卡不属于该用户");
+        if (property == null || !property.getUserId().equals(userId))
             return false;
-        }
 
-        // Deduct from wallet
         Double newWalletBalance = currentWalletBalance - amount;
         wallet.setBalance(newWalletBalance);
-        boolean walletUpdated = walletDAO.update(wallet);
-
-        if (!walletUpdated) {
+        if (!walletDAO.update(wallet))
             return false;
-        }
 
-        // Add to card
         Double currentCardBalance = card.getBalance() != null ? card.getBalance() : 0.0;
         card.setBalance(currentCardBalance + amount);
         card.setLastTopup(LocalDateTime.now());
         boolean cardUpdated = cardDAO.update(card);
 
         if (cardUpdated) {
-            // Record transaction
             recordTransaction(wallet.getWalletId(), "TOPUP_CARD", -amount, newWalletBalance, cardId,
                     "充值" + card.getCardType() + "卡: -" + amount + "元");
-            System.out.println("✅ 水电卡充值成功: 卡ID " + cardId + ", 充值金额 " + amount + "元");
         }
 
         return cardUpdated;
@@ -211,20 +150,16 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public boolean checkWalletArrears(Long userId) {
-        // Get all properties owned by this user
         List<Property> properties = propertyDAO.findByUserId(userId);
-
         for (Property property : properties) {
-            // Check unpaid wallet-payment fees for each property
             List<Fee> fees = feeDAO.findByPropertyId(property.getpId());
             for (Fee fee : fees) {
                 if (fee.getIsPaid() == 0 && "WALLET".equals(fee.getPaymentMethod())) {
-                    return true; // Found unpaid wallet fee
+                    return true;
                 }
             }
         }
-
-        return false; // No unpaid wallet fees
+        return false;
     }
 
     @Override
@@ -236,9 +171,8 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public List<WalletTransaction> getTransactionHistory(Long userId) {
         UserWallet wallet = walletDAO.findByUserId(userId);
-        if (wallet == null) {
+        if (wallet == null)
             return List.of();
-        }
         return transactionDAO.findByWalletId(wallet.getWalletId());
     }
 
@@ -248,28 +182,18 @@ public class WalletServiceImpl implements WalletService {
         wallet.setUserId(userId);
         wallet.setBalance(0.0);
         wallet.setTotalRecharged(0.0);
-
-        Long walletId = walletDAO.insert(wallet);
-        if (walletId != null) {
-            System.out.println("✅ 钱包创建成功: 用户ID " + userId + ", 钱包ID " + walletId);
-            return true;
-        }
-        return false;
+        return walletDAO.insert(wallet) != null;
     }
 
-    /**
-     * Helper method to record transaction
-     */
-    private void recordTransaction(Long walletId, String transType, Double amount,
-            Double balanceAfter, Long relatedId, String description) {
+    private void recordTransaction(Long walletId, String transType, Double amount, Double balanceAfter, Long relatedId,
+            String description) {
         WalletTransaction transaction = new WalletTransaction();
         transaction.setWalletId(walletId);
         transaction.setTransType(transType);
-        transaction.setAmount(Math.abs(amount)); // Store absolute value
+        transaction.setAmount(Math.abs(amount));
         transaction.setBalanceAfter(balanceAfter);
         transaction.setRelatedId(relatedId);
         transaction.setDescription(description);
-
         transactionDAO.insert(transaction);
     }
 }

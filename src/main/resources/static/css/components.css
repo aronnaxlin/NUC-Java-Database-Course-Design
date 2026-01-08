@@ -1,0 +1,171 @@
+/* Component Styles - Material Design 3 */
+
+/* Cards */
+.sci-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    /* Removed pseudo-elements for tech corners */
+}
+
+.sci-card:hover {
+    box-shadow: var(--shadow-md);
+    /* transform: translateY(-2px); Optional gentle lift */
+}
+
+.sci-card::before, .sci-card::after {
+    display: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    border-bottom: none; /* Cleaner look */
+    padding-bottom: 0;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+/* Forms & Inputs */
+.sci-input {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+}
+
+.sci-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.sci-input::placeholder {
+    color: var(--text-dim);
+}
+
+/* Buttons */
+.sci-btn {
+    background: var(--primary-color);
+    border: none;
+    color: #FFFFFF;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: var(--radius-pill); /* Pill shaped */
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    letter-spacing: 0.3px;
+}
+
+.sci-btn:hover {
+    background: #004D40; /* Darker shade of primary */
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    color: #FFFFFF;
+}
+
+.sci-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.sci-btn.danger {
+    background: #FFEBEE;
+    color: var(--danger-color);
+    border: 1px solid transparent;
+}
+
+.sci-btn.danger:hover {
+    background: var(--danger-color);
+    color: #FFFFFF;
+}
+
+/* Tables */
+.sci-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: var(--text-main);
+}
+
+.sci-table th {
+    padding: 12px 16px;
+    text-align: left;
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.sci-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+}
+
+.sci-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sci-table tr:hover td {
+    background: var(--bg-surface);
+}
+
+/* Grid System helper */
+.row {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.col-3 { flex: 0 0 calc(25% - var(--space-md)); }
+.col-4 { flex: 0 0 calc(33.33% - var(--space-md)); }
+.col-6 { flex: 0 0 calc(50% - var(--space-md)); }
+.col-8 { flex: 0 0 calc(66.66% - var(--space-md)); }
+.col-12 { flex: 0 0 100%; }
+
+/* Utilities */
+.text-cyan { color: var(--primary-color) !important; font-weight: 500; }
+.text-pink { color: var(--accent-color) !important; font-weight: 500; }
+.text-mono { font-family: var(--font-mono); }
+
+/* Alerts */
+.alert-box {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+.alert-success {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+}
+.alert-error {
+    background: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #FFCDD2;
+}

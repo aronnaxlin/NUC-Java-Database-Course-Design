@@ -1,0 +1,53 @@
+<div class="row">
+    <div class="col-12">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>欠费催缴列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="sci-table">
+                    <thead>
+                        <tr>
+                            <th>账单ID</th>
+                            <th>房产</th>
+                            <th>业主</th>
+                            <th>费用类型</th>
+                            <th>金额</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="arrearsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>创建单笔账单</h3>
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label>房产ID:</label>
+                <input type="number" id="createFeePid" class="sci-input">
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label>费用类型:</label>
+                <select id="createFeeType" class="sci-input">
+                    <option value="PROPERTY_FEE">物业费</option>
+                    <option value="HEATING_FEE">取暖费</option>
+                    <option value="WATER_FEE">水费</option>
+                    <option value="ELECTRICITY_FEE">电费</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label>金额:</label>
+                <input type="number" id="createFeeAmount" class="sci-input">
+            </div>
+            <button class="sci-btn" onclick="createFee()">创建</button>
+        </div>
+    </div>
+</div>

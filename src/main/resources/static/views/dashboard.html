@@ -1,0 +1,58 @@
+<div class="row">
+    <!-- Top Stats Cards -->
+    <div class="col-4">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>总收费率</h3>
+            </div>
+            <div class="stat-value text-cyan" id="stat-rate">Loading...</div>
+            <small id="stat-rate-detail" class="text-dim">---</small>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>年度总收入</h3>
+            </div>
+            <div class="stat-value text-cyan" id="stat-income">Loading...</div>
+            <small class="text-dim">本财年 (Current Year)</small>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>欠费告警</h3>
+            </div>
+            <div class="stat-value text-pink" id="stat-arrears">Loading...</div>
+            <small class="text-dim">高风险楼栋 (High Risk)</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Charts -->
+    <div class="col-6">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>收入构成</h3>
+            </div>
+            <div id="incomeChart" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="sci-card">
+            <div class="card-header">
+                <h3>欠费楼栋TOP5</h3>
+            </div>
+            <div id="arrearsChart" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        /* text-shadow removed for clean look */
+    }
+</style>

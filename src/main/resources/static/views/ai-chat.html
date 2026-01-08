@@ -1,0 +1,48 @@
+<div class="sci-card" style="height: calc(100vh - 140px); display: flex; flex-direction: column;">
+    <div class="card-header">
+        <h3>智能管家</h3>
+    </div>
+
+    <div id="chatHistory" style="flex: 1; overflow-y: auto; padding: 20px; background: var(--bg-surface); margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div class="msg bot">
+            <div class="bubble">您好！我是您的智能物业助手。您可以问我关于缴费、报修等问题。</div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="chatInput" class="sci-input" placeholder="输入您的问题..." onkeypress="handleChatKey(event)">
+        <button class="sci-btn" onclick="sendChat()">发送</button>
+    </div>
+</div>
+
+<style>
+    .msg {
+        margin-bottom: 20px;
+        display: flex;
+    }
+    .msg.user {
+        justify-content: flex-end;
+    }
+    .msg.bot {
+        justify-content: flex-start;
+    }
+    .bubble {
+        max-width: 70%;
+        padding: 12px 18px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .msg.user .bubble {
+        background: var(--primary-color);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+    .msg.bot .bubble {
+        background: white;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        border-bottom-left-radius: 4px;
+    }
+</style>

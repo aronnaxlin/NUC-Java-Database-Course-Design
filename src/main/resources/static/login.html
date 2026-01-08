@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 | Smart Property</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            margin: 0;
+            font-family: var(--font-body);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-card);
+            padding: 48px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .login-card h1 {
+            color: var(--text-main);
+            margin: 0 0 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .login-card p {
+            color: var(--text-secondary);
+            margin: 0 0 32px;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.2s;
+            outline: none;
+            color: var(--text-main);
+            background: #FAFAFA;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-pill);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+        }
+
+        button:hover {
+            background-color: #004D40;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .error-msg {
+            color: var(--danger-color);
+            margin-top: 24px;
+            font-size: 0.9rem;
+            min-height: 20px;
+            background: #FFEBEE;
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            display: none; /* Hide by default */
+        }
+
+        .error-msg:not(:empty) {
+            display: block;
+        }
+
+        .footer-link {
+            margin-top: 32px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .footer-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-logo">SP</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to Smart Property OS</p>
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+
+        <button onclick="handleLogin()">Sign In</button>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="footer-link">
+            Need help? <a href="#">Contact Support</a>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script>
+        async function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const err = document.getElementById('errorMsg');
+
+            if(!user || !pass) {
+                err.innerText = 'Please enter both username and password';
+                return;
+            }
+
+            err.innerText = ''; // Clear prev error
+
+            try {
+                // Using existing window.api logic if available, or fetch directly
+                // api-client.js isn't loaded properly if window.api is undefined here
+                // But let's reuse the fetch logic for standalone simplicity or load api-client.js
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                const res = await response.json(); // Assuming standard Result structure
+
+                if (res.code === 200) {
+                    const userData = res.data;
+                    localStorage.setItem('user_info', JSON.stringify(userData));
+                    window.location.href = 'index.html';
+                } else {
+                    err.innerText = res.message || 'Invalid username or password';
+                }
+            } catch (e) {
+                console.error(e);
+                err.innerText = 'Unable to connect to server';
+            }
+        }
+    </script>
+</body>
+</html>
