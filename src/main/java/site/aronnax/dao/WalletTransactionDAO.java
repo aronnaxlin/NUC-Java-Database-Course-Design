@@ -49,11 +49,13 @@ public class WalletTransactionDAO {
         return null; // ID retrieval omitted
     }
 
+    @SuppressWarnings("null")
     public List<WalletTransaction> findByWalletId(Long walletId) {
         String sql = "SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY trans_time DESC";
         return jdbcTemplate.query(sql, transactionRowMapper, walletId);
     }
 
+    @SuppressWarnings("null")
     public WalletTransaction findById(Long transId) {
         String sql = "SELECT * FROM wallet_transactions WHERE trans_id = ?";
         List<WalletTransaction> list = jdbcTemplate.query(sql, transactionRowMapper, transId);

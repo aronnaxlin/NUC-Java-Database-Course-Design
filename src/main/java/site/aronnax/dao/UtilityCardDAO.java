@@ -53,17 +53,20 @@ public class UtilityCardDAO {
                 card.getCardId()) > 0;
     }
 
+    @SuppressWarnings("null")
     public UtilityCard findById(Long cardId) {
         String sql = "SELECT * FROM utility_cards WHERE card_id = ?";
         List<UtilityCard> list = jdbcTemplate.query(sql, cardRowMapper, cardId);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    @SuppressWarnings("null")
     public List<UtilityCard> findAll() {
         String sql = "SELECT * FROM utility_cards";
         return jdbcTemplate.query(sql, cardRowMapper);
     }
 
+    @SuppressWarnings("null")
     public List<UtilityCard> findByPropertyId(Long pId) {
         String sql = "SELECT * FROM utility_cards WHERE p_id = ?";
         return jdbcTemplate.query(sql, cardRowMapper, pId);

@@ -57,22 +57,26 @@ public class PropertyDAO {
                 property.getArea(), property.getpStatus(), property.getUserId(), property.getpId()) > 0;
     }
 
+    @SuppressWarnings("null")
     public Property findById(Long pId) {
         String sql = "SELECT * FROM properties WHERE p_id = ?";
         List<Property> list = jdbcTemplate.query(sql, propertyRowMapper, pId);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    @SuppressWarnings("null")
     public List<Property> findAll() {
         String sql = "SELECT * FROM properties";
         return jdbcTemplate.query(sql, propertyRowMapper);
     }
 
+    @SuppressWarnings("null")
     public List<Property> findByUserId(Long userId) {
         String sql = "SELECT * FROM properties WHERE user_id = ?";
         return jdbcTemplate.query(sql, propertyRowMapper, userId);
     }
 
+    @SuppressWarnings("null")
     public Property findByRoomInfo(String buildingNo, String unitNo, String roomNo) {
         String sql = "SELECT * FROM properties WHERE building_no = ? AND unit_no = ? AND room_no = ?";
         List<Property> list = jdbcTemplate.query(sql, propertyRowMapper, buildingNo, unitNo, roomNo);

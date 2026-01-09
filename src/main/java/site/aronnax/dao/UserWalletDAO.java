@@ -43,12 +43,14 @@ public class UserWalletDAO {
         return null; // ID retrieval omitted
     }
 
+    @SuppressWarnings("null")
     public UserWallet findByUserId(Long userId) {
         String sql = "SELECT * FROM user_wallets WHERE user_id = ?";
         List<UserWallet> list = jdbcTemplate.query(sql, walletRowMapper, userId);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    @SuppressWarnings("null")
     public UserWallet findById(Long walletId) {
         String sql = "SELECT * FROM user_wallets WHERE wallet_id = ?";
         List<UserWallet> list = jdbcTemplate.query(sql, walletRowMapper, walletId);

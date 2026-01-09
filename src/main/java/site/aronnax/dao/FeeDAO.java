@@ -96,27 +96,32 @@ public class FeeDAO {
         return jdbcTemplate.update(sql, fId) > 0;
     }
 
+    @SuppressWarnings("null")
     public Fee findById(Long fId) {
         String sql = "SELECT * FROM fees WHERE f_id = ?";
         List<Fee> list = jdbcTemplate.query(sql, feeRowMapper, fId);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    @SuppressWarnings("null")
     public List<Fee> findAll() {
         String sql = "SELECT * FROM fees";
         return jdbcTemplate.query(sql, feeRowMapper);
     }
 
+    @SuppressWarnings("null")
     public List<Fee> findByPropertyId(Long pId) {
         String sql = "SELECT * FROM fees WHERE p_id = ?";
         return jdbcTemplate.query(sql, feeRowMapper, pId);
     }
 
+    @SuppressWarnings("null")
     public List<Fee> findUnpaidFees() {
         String sql = "SELECT * FROM fees WHERE is_paid = 0";
         return jdbcTemplate.query(sql, feeRowMapper);
     }
 
+    @SuppressWarnings("null")
     public List<Fee> findUnpaidByPropertyId(Long propertyId) {
         String sql = "SELECT * FROM fees WHERE p_id = ? AND is_paid = 0";
         return jdbcTemplate.query(sql, feeRowMapper, propertyId);

@@ -103,6 +103,7 @@ public class UserDAO {
      * @param userId 用户ID
      * @return 用户对象，不存在时返回null
      */
+    @SuppressWarnings("null")
     public User findById(Long userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, userId);
@@ -114,6 +115,7 @@ public class UserDAO {
      *
      * @return 用户列表
      */
+    @SuppressWarnings("null")
     public List<User> findAll() {
         String sql = "SELECT * FROM users";
         return jdbcTemplate.query(sql, userRowMapper);
@@ -125,6 +127,7 @@ public class UserDAO {
      * @param userName 用户名
      * @return 用户对象，不存在时返回null
      */
+    @SuppressWarnings("null")
     public User findByUserName(String userName) {
         String sql = "SELECT * FROM users WHERE user_name = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, userName);
@@ -141,6 +144,7 @@ public class UserDAO {
      * @param password 密码（明文）
      * @return 用户对象，验证失败时返回null
      */
+    @SuppressWarnings("null")
     public User findByUserNameAndPassword(String userName, String password) {
         String sql = "SELECT * FROM users WHERE user_name = ? AND password = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, userName, password);
@@ -154,6 +158,7 @@ public class UserDAO {
      * @param keyword 搜索关键词
      * @return 符合条件的用户列表
      */
+    @SuppressWarnings("null")
     public List<User> searchByKeyword(String keyword) {
         String sql = "SELECT * FROM users WHERE name LIKE ? OR phone LIKE ?";
         String searchPattern = "%" + keyword + "%";
