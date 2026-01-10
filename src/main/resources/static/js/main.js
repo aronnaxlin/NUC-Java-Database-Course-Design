@@ -91,7 +91,8 @@ function loadView(viewName) {
     // Set Title
     const titleMap = {
         'dashboard': '数据看板',
-        'owners': '业主管理',
+        'owners': '用户/业主管理',
+        'properties': '房产管理',
         'fees': '费用管理',
         'utility': '水电服务',
         'wallet': '我的钱包',
@@ -122,6 +123,8 @@ function initViewScript(viewName) {
         if (window.initDashboard) window.initDashboard();
     } else if (viewName === 'owners') {
         if (window.initOwners) window.initOwners();
+    } else if (viewName === 'properties') {
+        if (window.initProperties) window.initProperties();
     } else if (viewName === 'fees') {
         if (window.initFees) window.initFees();
     } else if (viewName === 'utility') {

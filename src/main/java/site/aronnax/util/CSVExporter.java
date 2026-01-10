@@ -135,6 +135,43 @@ public class CSVExporter {
     }
 
     /**
+     * Export properties to CSV
+     *
+     * @param properties List of property maps (with owner names)
+     * @param filePath   Output file path
+     * @return true if successful
+     */
+    public static boolean exportProperties(List<Map<String, Object>> properties, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            // Write CSV header
+            writer.write("Property ID,Building No,Unit No,Room No,Area(㎡),Status,Owner ID,Owner Name");
+            writer.newLine();
+
+            // Write data rows
+            for (Map<String, Object> property : properties) {
+                StringBuilder line = new StringBuilder();
+                line.append(property.get("pId")).append(",");
+                line.append(csvEscape(String.valueOf(property.get("buildingNo")))).append(",");
+                line.append(csvEscape(String.valueOf(property.get("unitNo")))).append(",");
+                line.append(csvEscape(String.valueOf(property.get("roomNo")))).append(",");
+                line.append(property.get("area")).append(",");
+                line.append(csvEscape(String.valueOf(property.get("pStatus")))).append(",");
+                line.append(property.get("userId") != null ? property.get("userId") : "").append(",");
+                line.append(csvEscape(String.valueOf(property.get("ownerName"))));
+
+                writer.write(line.toString());
+                writer.newLine();
+            }
+
+            System.out.println("✅ 房产信息已导出至: " + filePath);
+            return true;
+        } catch (IOException e) {
+            System.err.println("❌ 导出房产信息失败: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Escape CSV special characters
      *
      * @param value String value

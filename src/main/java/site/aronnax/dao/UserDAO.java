@@ -78,7 +78,7 @@ public class UserDAO {
 
     /**
      * 根据主键ID物理删除用户
-     * 
+     *
      * @param userId 目标用户ID
      * @return 是否删除成功
      */
@@ -89,14 +89,33 @@ public class UserDAO {
 
     /**
      * 更新用户档案信息
-     * 
+     * 如果password为null或空字符串，则不更新密码字段
+     *
      * @param user 包含新信息的实体 (必须包含 userId)
      * @return 是否更新成功
      */
     public boolean update(User user) {
-        String sql = "UPDATE users SET user_name=?, password=?, user_type=?, name=?, gender=?, phone=? WHERE user_id=?";
-        return jdbcTemplate.update(sql, user.getUserName(), user.getPassword(), user.getUserType(),
-                user.getName(), user.getGender(), user.getPhone(), user.getUserId()) > 0;
+        // 检查密码是否需要更新
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            // 不更新密码和性别
+            String sql = "UPDATE users SET user_name=?, user_type=?, name=?, phone=? WHERE user_id=?";
+            return jdbcTemplate.update(sql,
+                    user.getUserName(),
+                    user.getUserType(),
+                    user.getName(),
+                    user.getPhone(),
+                    user.getUserId()) > 0;
+        } else {
+            // 更新包括密码在内的字段,但不更新性别
+            String sql = "UPDATE users SET user_name=?, password=?, user_type=?, name=?, phone=? WHERE user_id=?";
+            return jdbcTemplate.update(sql,
+                    user.getUserName(),
+                    user.getPassword(),
+                    user.getUserType(),
+                    user.getName(),
+                    user.getPhone(),
+                    user.getUserId()) > 0;
+        }
     }
 
     /**
@@ -120,7 +139,7 @@ public class UserDAO {
 
     /**
      * 根据登录账号 (user_name) 查找用户
-     * 
+     *
      * @param userName 账号字符串
      */
     @SuppressWarnings("null")

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房产管理</title>
+</head>
+<body>
+    <div class="sci-card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>房产管理</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="sci-btn" onclick="showCreatePropertyModal()">新建房产</button>
+                <button class="sci-btn" onclick="exportProperties()">导出CSV</button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- 搜索栏 -->
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; margin-bottom:20px;">
+                <input type="text" id="searchBuilding" class="sci-input" placeholder="楼栋号">
+                <input type="text" id="searchUnit" class="sci-input" placeholder="单元号">
+                <input type="text" id="searchRoom" class="sci-input" placeholder="房号">
+                <button class="sci-btn" onclick="searchProperties()">搜索</button>
+            </div>
+
+            <!-- 房产列表表格 -->
+            <div class="table-container">
+                <table class="sci-table">
+                    <thead>
+                        <tr>
+                            <th>房产ID</th>
+                            <th>楼栋号</th>
+                            <th>单元号</th>
+                            <th>房号</th>
+                            <th>面积(㎡)</th>
+                            <th>状态</th>
+                            <th>业主</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertyTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-dim">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="propertyModalBackdrop" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100;" onclick="closePropertyModal()"></div>
+
+    <!-- 创建/编辑房产模态框 -->
+    <div id="propertyModal" class="sci-card" style="display:none; position: fixed; top: 10%; left: 25%; width: 50%; z-index: 101; box-shadow: 0 0 50px rgba(0,0,0,0.8); max-height: 80vh; overflow-y: auto;">
+        <div class="card-header">
+            <h3 id="propertyModalTitle">新建房产</h3>
+            <button class="sci-btn danger" onclick="closePropertyModal()">关闭</button>
+        </div>
+        <div style="padding: 20px;">
+            <input type="hidden" id="propertyModalId">
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>楼栋号:</label>
+                <input type="text" id="propertyModalBuilding" class="sci-input" placeholder="例如: A1">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>单元号:</label>
+                <input type="text" id="propertyModalUnit" class="sci-input" placeholder="例如: 1">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>房号:</label>
+                <input type="text" id="propertyModalRoom" class="sci-input" placeholder="例如: 101">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>面积(㎡):</label>
+                <input type="number" step="0.01" id="propertyModalArea" class="sci-input" placeholder="例如: 120.5">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>业主:</label>
+                <select id="propertyModalOwner" class="sci-input">
+                    <option value="">无业主(待售)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label>房产状态:</label>
+                <select id="propertyModalStatus" class="sci-input">
+                    <option value="">请选择</option>
+                    <option value="SOLD">已售</option>
+                    <option value="UNSOLD">待售</option>
+                    <option value="RENTED">出租</option>
+                </select>
+            </div>
+
+            <div class="form-actions" style="margin-top:20px;">
+                <button class="sci-btn" onclick="saveProperty()" style="width: 100%;">保存</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

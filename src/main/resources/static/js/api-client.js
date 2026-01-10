@@ -85,6 +85,53 @@ const apiClient = {
     },
 
     /**
+     * 发送PUT请求（JSON格式）
+     *
+     * @param {string} endpoint - API端点路径
+     * @param {Object} body - 请求体数据
+     * @returns {Promise<Object>} API响应数据
+     */
+    async put(endpoint, body = {}) {
+        const url = API_BASE + endpoint;
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        };
+
+        try {
+            const response = await fetch(url, options);
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error('API PUT Error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * 发送DELETE请求
+     *
+     * @param {string} endpoint - API端点路径
+     * @returns {Promise<Object>} API响应数据
+     */
+    async delete(endpoint) {
+        const url = API_BASE + endpoint;
+        const options = {
+            method: 'DELETE'
+        };
+
+        try {
+            const response = await fetch(url, options);
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error('API DELETE Error:', error);
+            throw error;
+        }
+    },
+
+    /**
      * 统一处理API响应
      *
      * @param {Response} response - Fetch API响应对象

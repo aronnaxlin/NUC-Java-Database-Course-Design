@@ -105,3 +105,17 @@ function formatDate(dateStr) {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString();
 }
+
+/**
+ * 导出欠费名单CSV
+ */
+function exportArrears() {
+    window.open('/api/export/arrears', '_blank');
+}
+
+/**
+ * 导出所有账单CSV
+ */
+function exportAllFees() {
+    window.open('/api/export/fees', '_blank');
+}

@@ -122,11 +122,11 @@ async function loadTransactions() {
 
                 html += `
                     <tr>
-                        <td>#${t.transactionId}</td>
+                        <td>#${t.transId}</td>
                         <td>${t.transType}</td>
                         <td class="${colorClass}">${sign}¥${t.amount.toFixed(2)}</td>
                         <td>${t.description}</td>
-                        <td>${new Date(t.createdAt).toLocaleString('zh-CN')}</td>
+                        <td>${new Date(t.transTime).toLocaleString('zh-CN')}</td>
                     </tr>
                 `;
             });
