@@ -1,0 +1,182 @@
+@startuml
+skinparam monochrome true
+skinparam linetype ortho
+skinparam shadowing false
+allowmixing
+
+' Package Definitions
+package "site.aronnax.common" {
+    class Result<T> {
+        - code : Integer
+        - msg : String
+        - data : T
+        + success(data: T) : Result
+        + error(msg: String) : Result
+    }
+}
+
+package "site.aronnax.dto" {
+    class LoginRequest {
+        - username : String
+        - password : String
+    }
+}
+
+package "site.aronnax.entity" {
+    class User {
+        - userId : Integer
+        - userName : String
+        - password : String
+        - userType : String
+    }
+    class Property {
+        - pId : Integer
+        - buildingNo : String
+        - unitNo : String
+        - roomNo : String
+        - ownerId : Integer
+    }
+    class Fee {
+        - fId : Integer
+        - pId : Integer
+        - feeType : String
+        - amount : BigDecimal
+        - isPaid : Integer
+        - payDate : Date
+    }
+    class UtilityCard {
+        - cardId : Integer
+        - pId : Integer
+        - cardType : String
+        - balance : BigDecimal
+        - lastTopup : Date
+    }
+    class UserWallet {
+        - walletId : Integer
+        - userId : Integer
+        - balance : BigDecimal
+        - payPassword : String
+    }
+    class WalletTransaction {
+        - transactionId : Long
+        - walletId : Integer
+        - amount : BigDecimal
+        - type : String
+        - createTime : Date
+    }
+}
+
+package "site.aronnax.dao" {
+    class UserDAO {
+        + findByUsername(name: String) : User
+        + save(user: User) : int
+    }
+    class PropertyDAO {
+        + findByOwnerId(ownerId: Integer) : List<Property>
+        + findById(pId: Integer) : Property
+    }
+    class FeeDAO {
+        + findUnpaidByProperty(pId: Integer) : List<Fee>
+        + findByOwner(ownerId: Integer) : List<Fee>
+        + updateStatus(fId: Integer) : int
+    }
+    class UtilityCardDAO {
+        + findByPropertyId(pId: Integer) : UtilityCard
+        + updateBalance(cardId: Integer, amount: BigDecimal) : int
+    }
+    class UserWalletDAO {
+        + findByUserId(userId: Integer) : UserWallet
+        + updateBalance(walletId: Integer, amount: BigDecimal) : int
+    }
+    class WalletTransactionDAO {
+        + save(tx: WalletTransaction) : int
+    }
+}
+
+package "site.aronnax.service" {
+    interface FeeService {
+        + getMyFees(userId: Integer) : List<Fee>
+        + payFee(fId: Integer) : void
+        + checkArrears(pId: Integer) : boolean
+    }
+    interface UtilityCardService {
+        + topUp(cardId: Integer, amount: BigDecimal) : void
+        + getCardInfo(pId: Integer) : UtilityCard
+    }
+    interface WalletService {
+        + recharge(userId: Integer, amount: BigDecimal) : void
+        + pay(userId: Integer, amount: BigDecimal) : void
+        + getWallet(userId: Integer) : UserWallet
+    }
+    interface OwnerService {
+        + getOwnerProperties(userId: Integer) : List<Property>
+    }
+
+    package "impl" {
+        class FeeServiceImpl {
+        }
+        class UtilityCardServiceImpl {
+        }
+        class WalletServiceImpl {
+        }
+        class OwnerServiceImpl {
+        }
+    }
+}
+
+package "site.aronnax.controller" {
+    class AuthController {
+        + login(req: LoginRequest) : Result
+    }
+    class FeeController {
+        + listMyFees() : Result
+        + pay(fId: Integer) : Result
+    }
+    class UtilityCardController {
+        + topUp(amount: BigDecimal) : Result
+        + getInfo() : Result
+    }
+    class WalletController {
+        + getWalletInfo() : Result
+        + recharge(amount: BigDecimal) : Result
+    }
+    class UserOwnerController {
+        + getUserInfo() : Result
+        + getMyProperties() : Result
+    }
+}
+
+' Relationships & Dependencies
+
+' Realization (Implementation)
+FeeService <|.. FeeServiceImpl
+UtilityCardService <|.. UtilityCardServiceImpl
+WalletService <|.. WalletServiceImpl
+OwnerService <|.. OwnerServiceImpl
+
+' Controller Usage
+AuthController ..> OwnerService : uses
+FeeController ..> FeeService : uses
+UtilityCardController ..> UtilityCardService : uses
+WalletController ..> WalletService : uses
+UserOwnerController ..> OwnerService : uses
+
+' Service Implementation Dependencies (DAO Association)
+FeeServiceImpl --> FeeDAO
+UtilityCardServiceImpl --> UtilityCardDAO
+WalletServiceImpl --> UserWalletDAO
+WalletServiceImpl --> WalletTransactionDAO
+OwnerServiceImpl --> UserDAO
+OwnerServiceImpl --> PropertyDAO
+
+' Critical Business Logic (Hard Interception)
+UtilityCardServiceImpl ..> FeeService : <<checks arrears>>
+
+' Entity Relationships
+User "1" -- "1" UserWallet : has
+User "1" -- "*" Property : owns
+Property "1" -- "*" Fee : incurs
+Property "1" -- "1" UtilityCard : equipped with
+UserWallet "1" -- "*" WalletTransaction : logs
+
+@enduml
