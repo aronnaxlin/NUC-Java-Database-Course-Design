@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 | Smart Property</title>
+    <title>登录 | 智慧物业管理系统</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/components.css">
     <style>
@@ -137,24 +137,24 @@
 <body>
 
     <div class="login-card">
-        <div class="brand-logo">SP</div>
-        <h1>Welcome Back</h1>
-        <p>Sign in to Smart Property OS</p>
+        <div class="brand-logo">A</div>
+        <h1>欢迎回来</h1>
+        <p>登录智慧物业管理系统</p>
 
         <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Enter your username">
+            <label for="username">用户名</label>
+            <input type="text" id="username" placeholder="请输入用户名">
         </div>
         <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码">
         </div>
 
-        <button onclick="handleLogin()">Sign In</button>
+        <button onclick="handleLogin()">登 录</button>
         <div class="error-msg" id="errorMsg"></div>
 
         <div class="footer-link">
-            Need help? <a href="#">Contact Support</a>
+            需要帮助？ <a href="#">联系管理员</a>
         </div>
     </div>
 
@@ -166,7 +166,7 @@
             const err = document.getElementById('errorMsg');
 
             if(!user || !pass) {
-                err.innerText = 'Please enter both username and password';
+                err.innerText = '请输入用户名和密码';
                 return;
             }
 
@@ -190,11 +190,11 @@
                     localStorage.setItem('user_info', JSON.stringify(userData));
                     window.location.href = 'index.html';
                 } else {
-                    err.innerText = res.message || 'Invalid username or password';
+                    err.innerText = res.message || '用户名或密码错误';
                 }
             } catch (e) {
                 console.error(e);
-                err.innerText = 'Unable to connect to server';
+                err.innerText = '无法连接到服务器';
             }
         }
     </script>

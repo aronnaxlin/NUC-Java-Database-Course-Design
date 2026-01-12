@@ -1,6 +1,5 @@
 package site.aronnax.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,14 +28,11 @@ public class FeeServiceImpl implements FeeService {
     private final FeeDAO feeDAO;
     private final PropertyDAO propertyDAO;
     private final UserDAO userDAO;
-    private final site.aronnax.service.WalletService walletService;
 
-    public FeeServiceImpl(FeeDAO feeDAO, PropertyDAO propertyDAO, UserDAO userDAO,
-            site.aronnax.service.WalletService walletService) {
+    public FeeServiceImpl(FeeDAO feeDAO, PropertyDAO propertyDAO, UserDAO userDAO) {
         this.feeDAO = feeDAO;
         this.propertyDAO = propertyDAO;
         this.userDAO = userDAO;
-        this.walletService = walletService;
     }
 
     /**
@@ -82,31 +78,6 @@ public class FeeServiceImpl implements FeeService {
         return count;
     }
 
-    /**
-     * 标记/处理缴费
-     * 根据费用的支付方式选择处理逻辑：
-     * - WALLET: 调用钱包服务扣款并记录交易
-     * - 其他: 仅标记为已支付（线下缴费等）
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean payFee(Long feeId) {
-        Fee fee = feeDAO.findById(feeId);
-        if (fee == null) {
-            return false;
-        }
-
-        // 如果是钱包支付，调用钱包服务处理（包含扣款和交易记录）
-        if ("WALLET".equals(fee.getPaymentMethod())) {
-            return walletService.payFeeFromWallet(feeId);
-        }
-
-        // 非钱包支付（如线下、卡片支付），仅标记为已支付
-        fee.setIsPaid(1);
-        fee.setPayDate(LocalDateTime.now());
-        return feeDAO.update(fee);
-    }
-
     @Override
     public List<Fee> getUnpaidFees() {
         return feeDAO.findUnpaidFees();
@@ -114,7 +85,7 @@ public class FeeServiceImpl implements FeeService {
 
     /**
      * 组装欠费汇总表
-     * 核心逻辑：执行多库联查。
+     * 核心逻辑:执行多库联查。
      * 从 FeeDAO 获取单据 -> 从 PropertyDAO 获取房屋位置 -> 从 UserDAO 获取业主身份。
      */
     @Override
@@ -124,6 +95,13 @@ public class FeeServiceImpl implements FeeService {
 
         for (Fee fee : unpaidFees) {
             Map<String, Object> arrearsInfo = new HashMap<>();
+
+            // 3. 填充账单基础信息
+            arrearsInfo.put("fee_id", fee.getfId());
+            arrearsInfo.put("fee_type", fee.getFeeType());
+            arrearsInfo.put("amount", fee.getAmount());
+            arrearsInfo.put("payment_method", fee.getPaymentMethod());
+            arrearsInfo.put("created_at", fee.getCreatedAt());
 
             // 1. 获取房产位置快照
             Property property = propertyDAO.findById(fee.getpId());
@@ -139,16 +117,25 @@ public class FeeServiceImpl implements FeeService {
                     if (owner != null) {
                         arrearsInfo.put("owner_name", owner.getName());
                         arrearsInfo.put("owner_phone", owner.getPhone());
+                    } else {
+                        // 房产有关联用户但用户不存在
+                        arrearsInfo.put("owner_name", null);
+                        arrearsInfo.put("owner_phone", null);
                     }
+                } else {
+                    // 房产未关联用户
+                    arrearsInfo.put("owner_name", null);
+                    arrearsInfo.put("owner_phone", null);
                 }
+            } else {
+                // 房产不存在,填充默认值
+                arrearsInfo.put("property_id", fee.getpId());
+                arrearsInfo.put("building_no", "N/A");
+                arrearsInfo.put("unit_no", "N/A");
+                arrearsInfo.put("room_no", "N/A");
+                arrearsInfo.put("owner_name", null);
+                arrearsInfo.put("owner_phone", null);
             }
-
-            // 3. 填充账单基础信息
-            arrearsInfo.put("fee_id", fee.getfId());
-            arrearsInfo.put("fee_type", fee.getFeeType());
-            arrearsInfo.put("amount", fee.getAmount());
-            arrearsInfo.put("payment_method", fee.getPaymentMethod());
-            arrearsInfo.put("created_at", fee.getCreatedAt());
 
             arrearsList.add(arrearsInfo);
         }
@@ -179,5 +166,54 @@ public class FeeServiceImpl implements FeeService {
             }
         }
         return false;
+    }
+
+    /**
+     * 获取指定用户的欠费汇总表
+     * 仅返回该用户名下房产的欠费数据
+     */
+    @Override
+    public List<Map<String, Object>> getArrearsListByUserId(Long userId) {
+        List<Map<String, Object>> arrearsList = new ArrayList<>();
+
+        // 查询用户所有房产
+        List<Property> properties = propertyDAO.findByUserId(userId);
+
+        for (Property property : properties) {
+            // 查询该房产的所有欠费
+            List<Fee> unpaidFees = feeDAO.findUnpaidByPropertyId(property.getpId());
+
+            for (Fee fee : unpaidFees) {
+                Map<String, Object> arrearsInfo = new HashMap<>();
+                arrearsInfo.put("fee_id", fee.getfId());
+                arrearsInfo.put("property_id", property.getpId());
+                arrearsInfo.put("building_no", property.getBuildingNo());
+                arrearsInfo.put("unit_no", property.getUnitNo());
+                arrearsInfo.put("room_no", property.getRoomNo());
+                arrearsInfo.put("fee_type", fee.getFeeType());
+                arrearsInfo.put("amount", fee.getAmount());
+                arrearsInfo.put("payment_method", fee.getPaymentMethod());
+                arrearsInfo.put("created_at", fee.getCreatedAt());
+
+                // 获取业主信息
+                if (property.getUserId() != null) {
+                    User owner = userDAO.findById(property.getUserId());
+                    if (owner != null) {
+                        arrearsInfo.put("owner_name", owner.getName());
+                        arrearsInfo.put("owner_phone", owner.getPhone());
+                    } else {
+                        arrearsInfo.put("owner_name", null);
+                        arrearsInfo.put("owner_phone", null);
+                    }
+                } else {
+                    arrearsInfo.put("owner_name", null);
+                    arrearsInfo.put("owner_phone", null);
+                }
+
+                arrearsList.add(arrearsInfo);
+            }
+        }
+
+        return arrearsList;
     }
 }

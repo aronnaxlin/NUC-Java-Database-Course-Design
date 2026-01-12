@@ -3,16 +3,19 @@ package site.aronnax.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpSession;
 import site.aronnax.common.Result;
 import site.aronnax.service.FeeService;
+import site.aronnax.service.UtilityCardService;
 
 /**
  * 费用管理控制器
@@ -24,10 +27,14 @@ import site.aronnax.service.FeeService;
 @RequestMapping("/api/fee")
 public class FeeController {
 
-    private final FeeService feeService;
+    private static final Logger logger = LoggerFactory.getLogger(FeeController.class);
 
-    public FeeController(FeeService feeService) {
+    private final FeeService feeService;
+    private final UtilityCardService utilityCardService;
+
+    public FeeController(FeeService feeService, UtilityCardService utilityCardService) {
         this.feeService = feeService;
+        this.utilityCardService = utilityCardService;
     }
 
     /**
@@ -120,37 +127,61 @@ public class FeeController {
     }
 
     /**
-     * 欠费全局清册接口
-     * 提供已逾期未缴纳的所有单据视图，含业主联系信息。
+     * 欠费清册接口（支持角色过滤）
+     * - 管理员：查看所有欠费
+     * - 业主：只查看自己名下房产的欠费
      */
     @GetMapping("/arrears")
-    public Result<List<Map<String, Object>>> getArrearsList() {
+    public Result<List<Map<String, Object>>> getArrearsList(HttpSession session) {
         try {
-            List<Map<String, Object>> arrearsList = feeService.getArrearsList();
+            String userType = (String) session.getAttribute("userType");
+            Long userId = (Long) session.getAttribute("userId");
+
+            // 验证session
+            if (userType == null) {
+                logger.warn("欠费列表访问被拒绝：session已失效");
+                return Result.error("未登录或会话已过期");
+            }
+
+            List<Map<String, Object>> arrearsList;
+            if ("ADMIN".equals(userType)) {
+                arrearsList = feeService.getArrearsList();
+            } else {
+                if (userId == null) {
+                    logger.warn("欠费列表访问被拒绝：userId为空");
+                    return Result.error("用户ID无效");
+                }
+                arrearsList = feeService.getArrearsListByUserId(userId);
+            }
+
             return Result.success(arrearsList != null ? arrearsList : List.of());
         } catch (Exception e) {
+            logger.error("获取欠费列表失败", e);
             return Result.error("获取统计视图失败：" + e.getMessage());
         }
     }
 
     /**
-     * 标记人工缴费
-     * 用于物业前台线下收银后，手动同步系统状态。
+     * 从水电卡扣费（仅业主可用）
+     * 用于业主支付水费/电费账单
      */
-    @PostMapping("/pay/{feeId}")
-    public Result<String> payFee(@PathVariable("feeId") Long feeId) {
-        if (feeId == null || feeId <= 0) {
-            return Result.error("账单流水号非法");
+    @PostMapping("/pay-from-card")
+    public Result<String> payFeeFromCard(@RequestParam("feeId") Long feeId, HttpSession session) {
+        String userType = (String) session.getAttribute("userType");
+
+        // 只允许业主使用此接口
+        if (!"OWNER".equals(userType)) {
+            return Result.error("管理员不能使用水电卡代缴费用");
         }
 
         try {
-            boolean success = feeService.payFee(feeId);
-            if (success) {
-                return Result.success("支付状态同步成功");
-            }
-            return Result.error("同步失败，未查询到该账单号");
+            boolean success = utilityCardService.payFeeFromCard(feeId);
+            return success ? Result.success("水电费缴纳成功") : Result.error("缴费失败");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
-            return Result.error("服务端异常：" + e.getMessage());
+            return Result.error("系统错误：" + e.getMessage());
         }
     }
+
 }

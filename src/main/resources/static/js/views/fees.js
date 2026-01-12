@@ -1,9 +1,22 @@
 window.initFees = function() {
+    const user = JSON.parse(localStorage.getItem('user_info'));
+    const role = user.userType || 'OWNER';
+
+    // 业主：隐藏创建账单功能
+    if (role === 'OWNER') {
+        const adminSection = document.getElementById('adminFeeCreateSection');
+        if (adminSection) adminSection.style.display = 'none';
+    }
+
     loadArrears();
 };
 
 async function loadArrears() {
     const tbody = document.getElementById('arrearsTableBody');
+    if (!tbody) {
+        console.error('arrearsTableBody element not found');
+        return;
+    }
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading...</td></tr>';
 
     try {
@@ -14,19 +27,40 @@ async function loadArrears() {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--accent-pink);">' + res.message + '</td></tr>';
         }
     } catch (e) {
+        console.error('加载欠费数据失败:', e);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--accent-pink);">Error loading data</td></tr>';
     }
 }
 
 function renderArrearsTable(list) {
     const tbody = document.getElementById('arrearsTableBody');
+    if (!tbody) {
+        console.error('arrearsTableBody element not found');
+        return;
+    }
+
     if (!list || list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">暂无欠费记录 (No Arrears)</td></tr>';
         return;
     }
 
+    const user = JSON.parse(localStorage.getItem('user_info'));
+    const role = user.userType || 'OWNER';
+
     let html = '';
     list.forEach(item => {
+        // 根据费用类型和角色决定按钮
+        let payButton;
+        if (item.fee_type === 'WATER_FEE' || item.fee_type === 'ELECTRICITY_FEE') {
+            if (role === 'OWNER') {
+                payButton = `<button class="sci-btn" onclick="payFeeFromCard(${item.fee_id})">从水电卡扣费</button>`;
+            } else {
+                payButton = `<span style="color: var(--text-dim);">请指导业主使用水电卡</span>`;
+            }
+        } else {
+            payButton = `<button class="sci-btn" onclick="payFeeFromWallet(${item.fee_id})">钱包缴费</button>`;
+        }
+
         html += `
             <tr>
                 <td>#${item.fee_id}</td>
@@ -35,9 +69,7 @@ function renderArrearsTable(list) {
                 <td>${formatFeeType(item.fee_type)}</td>
                 <td class="text-pink">¥${item.amount}</td>
                 <td>${formatDate(item.created_at)}</td>
-                <td>
-                    <button class="sci-btn" onclick="payFee(${item.fee_id})">线下缴费 (Pay Offline)</button>
-                </td>
+                <td>${payButton}</td>
             </tr>
         `;
     });
@@ -64,7 +96,6 @@ async function createFee() {
 
         if (res.code === 200) {
             alert('创建成功');
-            // Check role to toggle Create Bill
             loadArrears();
             document.getElementById('createFeeAmount').value = '';
         } else {
@@ -75,19 +106,37 @@ async function createFee() {
     }
 }
 
-async function payFee(feeId) {
-    if (!confirm('确认该住户已线下完成缴费？(Confirm Payment)')) return;
+// 钱包缴费（物业费/取暖费）
+async function payFeeFromWallet(feeId) {
+    if (!confirm('确认从钱包扣费缴纳此账单？系统将扣除账户余额并生成流水记录。')) return;
 
     try {
-        const res = await window.api.post(`/fee/pay/${feeId}`);
+        const res = await window.api.postForm('/wallet/pay-fee', { feeId: feeId });
         if (res.code === 200) {
-            alert('操作成功');
-            loadArrears(); // Refresh
+            alert('缴费成功！已从钱包扣款并生成流水记录。');
+            loadArrears();
         } else {
-            alert('操作失败: ' + res.message);
+            alert('缴费失败: ' + res.message);
         }
     } catch (e) {
-        alert('缴费失败，系统错误');
+        alert('缴费失败: ' + (e.message || '系统错误'));
+    }
+}
+
+// 水电卡扣费（水费/电费）
+async function payFeeFromCard(feeId) {
+    if (!confirm('确认从水电卡扣费缴纳此账单？\n系统将从对应房产的水电卡余额中扣除。')) return;
+
+    try {
+        const res = await window.api.postForm('/fee/pay-from-card', { feeId: feeId });
+        if (res.code === 200) {
+            alert('水电费缴纳成功！');
+            loadArrears();
+        } else {
+            alert('缴费失败: ' + res.message);
+        }
+    } catch (e) {
+        alert('缴费失败: ' + (e.message || '系统错误'));
     }
 }
 

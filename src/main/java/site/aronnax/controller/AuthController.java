@@ -61,6 +61,9 @@ public class AuthController {
         if (user != null) {
             // 将用户对象注入 Session，开启会话生命周期
             session.setAttribute("user", user);
+            // 同时设置常用属性，方便其他Controller使用
+            session.setAttribute("userId", user.getUserId());
+            session.setAttribute("userType", user.getUserType());
             return Result.success(user);
         }
 
